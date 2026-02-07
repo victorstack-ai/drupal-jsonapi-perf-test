@@ -1,0 +1,41 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use DrupalJsonApiPerf\BenchmarkRunner;
+
+$application = new Application('Drupal JSON:API Perf Test', '1.0.0');
+
+$application->register('run')
+    ->setDescription('Run a benchmark against a JSON:API endpoint')
+    ->addArgument('url', InputArgument::REQUIRED, 'The JSON:API URL to test')
+    ->addOption('iterations', 'i', InputOption::VALUE_OPTIONAL, 'Number of iterations', 5)
+    ->setCode(function (InputInterface $input, OutputInterface $output) {
+        $url = $input->getArgument('url');
+        $iterations = (int) $input->getOption('iterations');
+
+        $output->writeln("Benchmarking <info>$url</info> with <info>$iterations</info> iterations...");
+
+        $runner = new BenchmarkRunner();
+        $results = $runner->runBenchmark($url, $iterations);
+
+        if ($results['errors'] > 0) {
+            $output->writeln("<error>Encountered " . $results['errors'] . " errors</error>");
+        }
+
+        if (isset($results['avg_time'])) {
+            $output->writeln(sprintf("Average Time: <comment>%.2f ms</comment>", $results['avg_time']));
+            $output->writeln(sprintf("Average Size: <comment>%.2f bytes</comment>", $results['avg_size']));
+        }
+
+        return Command::SUCCESS;
+    });
+
+$application->run();

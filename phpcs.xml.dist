@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<ruleset name="Project Standard">
+    <description>Project coding standard.</description>
+    <arg name="colors"/>
+    <arg value="p"/>
+    <rule ref="PSR12"/>
+    <file>src</file>
+    <file>tests</file>
+    <file>bin/benchmark</file>
+</ruleset>
